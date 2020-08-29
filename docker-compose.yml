@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  smppsim: 
+    image: cgcorea/smppsim:1.0
+    ports:
+      - 8088:88
+    
+  bearerbox:
+    image: cgcorea/kannel:1.0
+    depends_on:
+      - smppsim
+      - redis
+    volumes:
+      - .:/etc/kannel
+      - .:/var/log/kannel
+    command: /usr/local/kannel/sbin/bearerbox ${BEARERBOX_CONF_FILE}
+    
+  smsbox:
+    image: cgcorea/kannel:1.0
+    depends_on:
+      - bearerbox
+    ports:
+      - 4103:4103
+    volumes:
+      - .:/etc/kannel
+      - .:/var/log/kannel
+    command: /usr/local/kannel/sbin/smsbox ${SMSBOX_CONF_FILE}
+
+  redis:
+    image: redis:5.0
+
