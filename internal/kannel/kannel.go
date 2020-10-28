@@ -43,13 +43,13 @@ type Response struct {
 	Message string
 }
 
-func setHeader(request *http.Request, header string, value string) {
+func setHeader(request *http.Request, header, value string) {
 	if value != "" {
 		request.Header.Set(header, value)
 	}
 }
 
-func NewClient(host string, port int, username string, password string) *Client {
+func NewClient(host string, port int, username, password string) *Client {
 	url := fmt.Sprintf("http://%v:%v/cgi-bin/sendsms", host, port)
 
 	client := &Client{
@@ -95,7 +95,7 @@ func NewClient(host string, port int, username string, password string) *Client 
 // meta-data	X-Kannel-Meta-Data
 //
 // TODO(cgcorea): Set charset in Content-Type
-func (k *Client) buildHTTPRequest(from string, to string, text string, options *Options) (*http.Request, error) {
+func (k *Client) buildHTTPRequest(from, to, text string, options *Options) (*http.Request, error) {
 	req, err := http.NewRequest("POST", k.url, strings.NewReader(text))
 	if err != nil {
 		return nil, err
@@ -131,7 +131,7 @@ func (k *Client) buildHTTPRequest(from string, to string, text string, options *
 }
 
 // Send ...
-func (k *Client) Send(from string, to string, text string, options *Options) (*Response, error) {
+func (k *Client) Send(from, to, text string, options *Options) (*Response, error) {
 	req, err := k.buildHTTPRequest(from, to, text, options)
 	if err != nil {
 		return nil, err

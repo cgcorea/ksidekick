@@ -17,3 +17,6 @@
 *.log
 *.conf
 .env
+
+.idea/
+.vscode/
