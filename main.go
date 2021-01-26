@@ -22,10 +22,11 @@ import (
 
 	"github.com/cgcorea/ksidekick/cmd"
 	"github.com/cgcorea/ksidekick/internal/debug"
-	"github.com/cgcorea/ksidekick/internal/kannel"
+	"github.com/cgcorea/ksidekick/pkg/kannel"
 )
 
 func main() {
+	sendSMS()
 	cmd.Execute()
 
 	// sendSMS()
@@ -35,11 +36,27 @@ func sendSMS() {
 	fmt.Printf("ksidekick: Kannel Sidekick utility\n\n")
 	k := kannel.NewClient("localhost", 4103, "sender", "sender")
 
-	options := kannel.Options{SMSC: "tigo-hn-smsc1"}
+	options := []func(*kannel.Request){kannel.SMSC("tigo-hn-1")}
+	options = append(
+		options,
+		kannel.DLRUrl("http://example.com/?from=%d"),
+	)
+	req, err := k.NewRequest(
+		"1010",
+		"50499821977",
+		"Hello world",
+		kannel.Priority(1),
+		kannel.DLRUrl("http://example.com/?from=%d"),
+		kannel.DLRMask(3),
+	)
 
-	debug.Inspect(options, os.Stdout)
-	resp, err := k.Send("1010", "50499821977", "Hello world", &options)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	debug.Inspect(req.Header, os.Stdout)
+
+	resp, err := k.Send(req)
 	if err != nil {
 		log.Fatal(err)
 	}

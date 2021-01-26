@@ -9,5 +9,8 @@ import (
 
 func Inspect(v interface{}, w io.Writer) {
 	s, _ := json.MarshalIndent(v, "", "  ")
-	fmt.Fprintf(w, "\n%v -> %v\n", reflect.TypeOf(v), string(s))
+	_, err := fmt.Fprintf(w, "\n%v -> %v\n", reflect.TypeOf(v), string(s))
+	if err != nil {
+		fmt.Println(err)
+	}
 }
