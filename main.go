@@ -18,16 +18,28 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/cgcorea/ksidekick/cmd"
+	"github.com/cgcorea/ksidekick/kannel"
+
 	"github.com/cgcorea/ksidekick/internal/debug"
-	"github.com/cgcorea/ksidekick/pkg/kannel"
+	"github.com/cgcorea/ksidekick/internal/server"
 )
 
 func main() {
-	sendSMS()
-	cmd.Execute()
+	// sendSMS()
+
+	srv := server.NewServer()
+	srv.SetRoutes()
+
+	log.Println("Listing on port 7000")
+	err := http.ListenAndServe("localhost:7000", srv.Router)
+	if err != nil {
+		fmt.Println("Error starting server: ", err)
+	}
+
+	// cmd.Execute()
 
 	// sendSMS()
 }
@@ -41,6 +53,7 @@ func sendSMS() {
 		options,
 		kannel.DLRUrl("http://example.com/?from=%d"),
 	)
+
 	req, err := k.NewRequest(
 		"1010",
 		"50499821977",
