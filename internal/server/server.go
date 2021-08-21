@@ -5,15 +5,14 @@ import (
 	"log"
 	"net/http"
 
-	kannel2 "github.com/cgcorea/ksidekick/kannel"
-
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/cgcorea/ksidekick/kannel"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Server struct {
 	Router *chi.Mux
-	client *kannel2.Client
+	client *kannel.Client
 }
 
 type Message struct {
@@ -31,12 +30,12 @@ func NewServer() *Server {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 
-	c := kannel2.NewClient("localhost", 4103, "sender", "sender")
+	c := kannel.NewClient("localhost", 4103, "sender", "sender")
 
 	return &Server{Router: r, client: c}
 }
 
-func (s *Server) sendMessage(w http.ResponseWriter, r *http.Request) {
+func (srv *Server) sendMessage(w http.ResponseWriter, r *http.Request) {
 	m := &Message{}
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&m); err != nil {
@@ -46,11 +45,11 @@ func (s *Server) sendMessage(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("sendMessage: %#v", m)
 
-	req, err := s.client.NewRequest(m.From, m.To, m.Text)
+	req, err := srv.client.NewRequest(m.From, m.To, m.Text)
 	if err != nil {
 		log.Println("Error creating Kannel request:", err)
 	}
-	response, err := s.client.Send(req)
+	response, err := srv.client.Send(req)
 	log.Printf("response: %#v", response)
 
 	if err != nil {
@@ -69,6 +68,6 @@ func renderJSON(w http.ResponseWriter, response interface{}) {
 	}
 }
 
-func (s *Server) SetRoutes() {
-	s.Router.Post("/message", s.sendMessage)
+func (srv *Server) SetRoutes() {
+	srv.Router.Post("/message", srv.sendMessage)
 }
